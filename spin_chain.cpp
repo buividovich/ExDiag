@@ -54,42 +54,6 @@ SpinChain::SpinChain(uint L, double h, bool diagonalize, bool check)
 	};
 	printf("]\n\n"); fflush(stdout);
 	
-	//Test hermiticity and commutativity with sz
-	if(check)
-	{
-		double* psi1 = new double[N];
-		double* psi2 = new double[N];
-		double* psi3 = new double[N];
-		double* tmp  = new double[N];
-		
-		rand_vec(psi1, N); rand_vec(psi2, N);
-		
-		//Hermiticity test
-		H(psi1, tmp);
-		double r1 = scalar_prod(psi2, tmp, N);
-		H(psi2, tmp);
-		double r2 = scalar_prod(psi1, tmp, N);
-		printf("\t >> Hermiticity error (full):        \t %2.4E\n", fabs(r1 - r2));
-		
-		//Hermiticity test for spin-0 Hamiltonian
-		rand_vec(psi1, NS0); rand_vec(psi2, NS0);
-		HS0(psi1, tmp);
-		r1 = scalar_prod(psi2, tmp, NS0);
-		HS0(psi2, tmp);
-		r2 = scalar_prod(psi1, tmp, NS0);
-		printf("\t >> Hermiticity error (spin zero):    \t %2.4E\n", fabs(r1 - r2));
-		
-		//Commuting with total spin
-		sz(psi1, tmp); H( tmp, psi2);
-		H( psi1, tmp); sz(tmp, psi3);
-		printf("\t >> SZ commutativity error:\t %2.4E\n", norm_diff(psi2, psi3));
-		
-		delete [] psi1;
-		delete [] psi2;
-		delete [] psi3;
-		delete [] tmp;
-	};
-	
 	if(diagonalize)
 		diagonalize_HS0(check);
 }
@@ -194,23 +158,6 @@ double    SpinChain::norm_diff(double* psi1, double* psi2, uint n)
 	for(int ips=0; ips<n; ips++)
 		nn += (psi1[ips] - psi2[ips])*(psi1[ips] - psi2[ips]);
 	return sqrt(nn);
-}
-
-void    SpinChain::get_H_matrix(double* HM)
-{
-	double* in  = new double[N];
-	double* out = new double[N];
-	
-	for(uint ib=0; ib<N; ib++)
-	{
-		for(uint ips=0; ips<N; ips++) in[ips] = 0.0;
-		in[ib] = 1.0;
-		this->H(in, out);
-		for(uint ips=0; ips<N; ips++) HM[N*ips + ib] = out[ips];
-	};
-	
-	delete [] in;
-	delete [] out;
 }
 
 void    SpinChain::get_HS0_matrix(double* HM)

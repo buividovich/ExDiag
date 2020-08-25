@@ -4,9 +4,6 @@
 #include <vector>
 #include <thread>
 
-#include <OpenBLAS/cblas.h>
-#include <OpenBLAS/lapacke.h>
-
 #include "spin_chain.hpp"
 
 using namespace std;
@@ -42,34 +39,9 @@ int main(int argc, char **argv)
 		printf("\tIteration %u out of %u\n", ih, nh);
 		SpinChain* SC = new SpinChain(L, h);
 		
-		FILE* f = fopen("G:\\LAT\\ExDiag\\hi.dat", "w");
-		for(uint i=0; i<SC->L; i++)
-			fprintf(f, "%+2.8E\n", SC->hi[i]);
-		fclose(f);
-		
-		//Saving the whole matrix to output
-		double* HM = new double[SC->N2];
-		SC->get_H_matrix(HM);
-		
-		f = fopen("G:\\LAT\\ExDiag\\H.dat", "w");
-		for(uint i=0; i<SC->N; i++)
-		{
-			for(uint j=0; j<SC->N; j++)
-				fprintf(f, "%+2.8E ", HM[i*SC->N + j]);
-			fprintf(f, "\n");
-		};
-		fclose(f);
-		
-		delete [] HM;
-		
 		printf("Eigenspectrum:\n");
-		f = fopen("G:\\LAT\\ExDiag\\E.dat", "w");
 		for(uint i=0; i<SC->NS0; i++)
-		{
-			fprintf(f, "%+2.8E\n", SC->E[i]);
 			printf("%+2.4lf\n", SC->E[i]);
-		};
-		fclose(f);
 		fflush(stdout);
 		
 		delete SC;

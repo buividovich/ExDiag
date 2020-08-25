@@ -2,14 +2,9 @@
 #define _SPIN_CHAIN_HPP_
 
 #include<complex>
-#include<ctime>
 #include<chrono>
 #include<random>
 #include<limits>
-#include<iostream>
-#include<bitset>
-
-#include<omp.h>
 
 #include<OpenBLAS/cblas.h>
 #include<OpenBLAS/lapacke.h>
@@ -45,14 +40,11 @@ class SpinChain
 		void    HS0(double* in, double* out);				//Hamiltonian in spin0 sector
 		void    sz(double* in, double* out);       			//global SigmaZ operator
 		void    sz(double* in, double* out, uint i);       	//local  SigmaZ operator
-		void    diagonalize_H(bool check=true);
 		void    diagonalize_HS0(bool check=true);
 		double* E  = NULL;									//Eigenenergies
 		double* U  = NULL;									//The real-value matrix of eigenvectors, H = O.E.O^T, E is treated as diagonal matrix
 		//Spectral properties
-		void    get_H_matrix(double* HM);
 		void    get_HS0_matrix(double* HM);
-		void    eigenspectrum(double* E);					//find the eigenspectrum of the Hamiltonian
 		//Some useful stuff
 		void    rand_vec(double* in, uint n, bool normalize=true);	//Random real vector, filled with Gaussian numbers with unit dispersion
 		double  scalar_prod(double* psi1, double* psi2, uint n);
