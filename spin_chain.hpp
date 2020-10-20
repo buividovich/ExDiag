@@ -25,7 +25,7 @@ class SpinChain
 		std::uniform_real_distribution<double> rng_uniform_dist;
 		std::normal_distribution<double> rng_normal_dist{0.0, 1.0};
 	public:
-		SpinChain(uint L, double h, bool diagonalize=true, bool check=true);
+		SpinChain(uint L, double h, bool diagonalize=true, bool check=true, bool noisy=false);
 		~SpinChain(){};
 		uint L     = 0;										//Spin chain length
 		uint N     = 1;										//Size of the Hilbert space
@@ -40,9 +40,11 @@ class SpinChain
 		void    HS0(double* in, double* out);				//Hamiltonian in spin0 sector
 		void    sz(double* in, double* out);       			//global SigmaZ operator
 		void    sz(double* in, double* out, uint i);       	//local  SigmaZ operator
-		void    diagonalize_HS0(bool check=true);
+		void    diagonalize_HS0(bool check=true, bool noisy=false);
 		double* E  = NULL;									//Eigenenergies
 		double* U  = NULL;									//The real-value matrix of eigenvectors, H = O.E.O^T, E is treated as diagonal matrix
+		double  max_orthogonality_err	=	0.0;
+		double  max_eigensystem_err		=	0.0;
 		//Spectral properties
 		void    get_HS0_matrix(double* HM);
 		//Some useful stuff

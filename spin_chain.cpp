@@ -8,7 +8,7 @@ uint count_bits(uint a, uint L) //Counts the number of binary 1's in the binary 
 	return r;
 }
 
-SpinChain::SpinChain(uint L, double h, bool diagonalize, bool check)
+SpinChain::SpinChain(uint L, double h, bool diagonalize, bool check, bool noisy)
 {
 	if(L%2!=0)
 	{
@@ -41,21 +41,21 @@ SpinChain::SpinChain(uint L, double h, bool diagonalize, bool check)
 			is++;
 		};
 
-	printf("\n >>>>>> L = %u, N=%u, h = %2.4lf, NS0=%u >>>>>>>>>>>>> \n\n", this->L, this->N, h, NS0); fflush(stdout);
+	if(noisy){printf("\n >>>>>> L = %u, N=%u, h = %2.4lf, NS0=%u >>>>>>>>>>>>> \n\n", this->L, this->N, h, NS0); fflush(stdout);};
 	
 	hi = new double[L];
 	//Initialize the random number generator
 	rng_engine.seed(std::chrono::system_clock::now().time_since_epoch().count());
-	printf("\n hi = [");
+	if(noisy) printf("\n hi = [");
 	for(uint i=0; i<L; i++)
 	{
 		hi[i] = -0.5*h + h*rng_uniform_dist(rng_engine);
-		printf("%+2.4lf, ", hi[i]);
+		if(noisy) printf("%+2.4lf, ", hi[i]);
 	};
-	printf("]\n\n"); fflush(stdout);
+	if(noisy){ printf("]\n\n"); fflush(stdout); };
 	
 	if(diagonalize)
-		diagonalize_HS0(check);
+		diagonalize_HS0(check, false);
 }
 
 void SpinChain::H(double* in, double* out)
@@ -177,7 +177,7 @@ void    SpinChain::get_HS0_matrix(double* HM)
 	delete [] out;
 }
 
-void    SpinChain::diagonalize_HS0(bool check)					//find the eigenspectrum of the Hamiltonian
+void    SpinChain::diagonalize_HS0(bool check, bool noisy)					//find the eigenspectrum of the Hamiltonian
 {
 	//Initialize storage for evecs
 	E	= new double[NS0];
@@ -193,14 +193,14 @@ void    SpinChain::diagonalize_HS0(bool check)					//find the eigenspectrum of t
 	};
 	
 	int res = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', NS0, U, NS0, E);
-	if(res!=0) printf("\nSomething went wrong, LAPACKE_dsyev returned %i !!!\n", res);
+	if(res!=0){ fprintf(stderr, "\nSomething went wrong, LAPACKE_dsyev returned %i !!!\n", res); fflush(stderr);};
 	
 	if(check)
-	{
-		double max_err = 0.0;	
+	{	
 		double* C = new double[NS0];
 		
 		//Checking the eigensystem	
+		max_eigensystem_err = 0.0;
 		for(uint ie=0; ie<NS0; ie++)
 		{
 			for(uint i=0; i<NS0; i++)
@@ -212,12 +212,12 @@ void    SpinChain::diagonalize_HS0(bool check)					//find the eigenspectrum of t
 			double err = 0.0;
 			for(uint i=0; i<NS0; i++)
 				err += SQR(C[i] - E[ie]*U[i*NS0 + ie]);
-			max_err = max(max_err, sqrt(err));
+			max_eigensystem_err = max(max_eigensystem_err, sqrt(err));
 		};
-		printf("\t >> Max. eigenspectrum err:\t %2.4E\n", max_err);
+		if(noisy){ printf("\t >> Max. eigenspectrum err:\t %2.4E\n", max_eigensystem_err); };
 	
 		//Orthogonality check
-		max_err = 0.0;
+		max_orthogonality_err = 0.0;
 		for(uint ie1=0; ie1<NS0; ie1++)
 			for(uint ie2=0; ie2<NS0; ie2++)
 			{
@@ -225,9 +225,9 @@ void    SpinChain::diagonalize_HS0(bool check)					//find the eigenspectrum of t
 				for(uint i=0; i<NS0; i++)
 					sp += U[i*NS0 + ie1]*U[i*NS0 + ie2];
 				sp = (ie1==ie2? sp - 1.0 : sp);
-				max_err = max(max_err, fabs(sp));
+				max_orthogonality_err = max(max_orthogonality_err, fabs(sp));
 			};
-		printf("\t >> Max. orthogonality err:\t %2.4E\n", max_err);
+		if(noisy){ printf("\t >> Max. orthogonality err:\t %2.4E\n", max_orthogonality_err); };
 		
 		delete [] HM;
 		delete [] C;

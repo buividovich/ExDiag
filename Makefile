@@ -1,6 +1,6 @@
 
 SRC = ./spin_chain.cpp
-HDR = $(SRC:.cpp=.hpp)
+HDR = ./spin_chain.hpp
 
 LIB = -lm -lboost_program_options-mt -lopenblas -lm
 
