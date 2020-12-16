@@ -22,10 +22,10 @@ int main(int argc, char **argv)
 	po::options_description desc("Simulation of a spin chain which features a chaos-order transition");
 	desc.add_options()
 	     ("help,h", "produce this help message")
-	     ("L",   		po::value<uint>(          &(L))->default_value( 8), "Spin chain length")
-	     ("datadir", 	po::value<string>( &datadir ),     "Directory for data output" )
-	     ("h",   po::value<double>(        &(h))->default_value( 0.0), "Random magnetic field length")
-		 ("nh",  po::value<uint>(         &(nh))->default_value(   1), "Number of random magnetic field replicas");
+	     ("L",   		po::value<uint>(     &(L))->default_value( 8), "Spin chain length")
+	     ("datadir", 	po::value<string>(                 &datadir ), "Directory for data output" )
+	     ("h",          po::value<double>( &(h))->default_value( 0.0), "Random magnetic field length")
+		 ("nh",         po::value<uint>(  &(nh))->default_value(   1), "Number of random magnetic field replicas");
 	     
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 		bool ordered_check = true;
 		for(uint ie=0; ie<NS0; ie++)
 		{
-			if(ie<NS0-1) ordered_check = ordered_check && (SC->E[ie+1] > SC->E[ie]);
+			if(ie<NS0-1) ordered_check = ordered_check && (SC->E[ie+1] >= SC->E[ie]);
 			ES[ih*NS0 + ie] = SC->E[ie];
 		};
 		if(!ordered_check){ fprintf(stderr, "\x1b[1;31m Eigenvalues NOT in order \x1b[0m\n"); fflush(stderr);};
@@ -101,6 +101,14 @@ int main(int argc, char **argv)
 	dR = sqrt((dR - aR*aR)/(double)(ncR-1));
 	
 	printf("\n\t >> \x1b[1;36m Characteristic ratio:\t \x1b[1;35m %2.2lf +/- %2.2lf \x1b[1;37m (over %u points out of %u)\x1b[0m\n", aR, dR,ncR, nh);
+	
+	char Rname[512];
+	sprintf(Rname, "%s/R_L%u.dat", datadir.c_str(), L);
+	printf("\nOutput file for the R ratio:\t%s\n", Rname);
+	f = fopen(Rname, "a");
+	if(f==NULL){cerr << "The file " << Rname << " could not be opened" << endl; };
+	fprintf(f, "%2.4lf %2.4lf %2.4lf\n", h, aR, dR);
+	if(f!=NULL) fclose(f);
 	
 	delete [] ES;
 	

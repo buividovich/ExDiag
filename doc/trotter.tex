@@ -1,0 +1,151 @@
+\documentclass[10pt,amsmath,amssymb,twocolumn,superscriptaddress,groupedaddress,nofootinbib,aps,prd,twocolumn]{revtex4-1}
+
+\usepackage{graphicx}  % needed for figures
+\graphicspath{{./plots/}}
+\usepackage{bm}        % for math
+\usepackage{enumitem}
+\usepackage[colorlinks=true]{hyperref}
+
+\pdfminorversion=7
+\pdfsuppresswarningpagegroup=1
+
+\providecommand{\texorpdfstring}[2]{#1}
+
+\newcommand{\lr}[1]{\left(#1\right)}
+\newcommand{\lrs}[1]{\left[#1\right]}
+\newcommand{\vev}[1]{\left\langle #1 \right\rangle}
+\newcommand{\ket}[1]{ \, | #1 \rangle }
+\newcommand{\bra}[1]{ \langle #1 | \, }
+\newcommand{\braket}[2]{ \langle #1 | #2 \rangle }
+\newcommand{\mycomment}[1]{}
+\renewcommand{\b}[1]{\mathbf{#1}}
+
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+
+\begin{document}
+\sloppy
+
+\section{Introduction}
+\label{sec:intro}
+
+We consider the XXZ model Hamiltonian in random external magnetic field:
+\begin{eqnarray}
+\label{XXZ_Hamiltonian}
+ \hat{H} = \hat{H}_0 + \hat{H}_I,
+ \nonumber \\
+ \hat{H}_0 = \sum\limits_{x,\alpha} \hat{\sigma}^{\alpha}_x \hat{\sigma}^{\alpha}_{x+1} ,
+ \quad
+ \hat{H}_I = \sum\limits_x \frac{h_x}{2} \hat{\sigma}^3_x ,
+\end{eqnarray}
+where $\hat{\sigma}^{\alpha}_x$ are the spin operators with the usual commutation relations $\lrs{\hat{\sigma}^{\alpha}_x, \hat{\sigma}^{\beta}_y} = i \delta_{x y} \epsilon^{\alpha\beta\gamma} \hat{\sigma}^{\gamma}$ and $h_x$ are coordinate-dependent random magnetic fields which take random values in the range $h_x \in \lrs{-h, h}$.
+
+We impose periodic boundary conditions with length $L$: $x = 0 \ldots \lr{L-1}$, $x = \lr{L-1}+1$ is identified with $x = 0$. Since the Hamiltonian (\ref{XXZ_Hamiltonian}) commutes with the total spin in a fixed direction, we restrict our Hilbert space to the subspace of states with total spin zero in the direction $\alpha = 3$:
+\begin{eqnarray}
+\label{spin0_constraint}
+ \sum\limits_{x} \hat{\sigma}^3_x \, \ket{\psi} = 0 .
+\end{eqnarray}
+The dimensionality of this subspace is $L!/\lr{\lr{L/2}!}^2$.
+
+With these constraints, the model undergoes a many-body localization phase transition at $h \approx 3.75$ \cite{Luitz:1411.0660}, which can also be interpreted as an order-to-chaos phase transition \cite{Hanada:1803.08050}.
+
+\begin{figure*}[h!pb]
+  \centering
+  \includegraphics[width=0.49\textwidth]{trotter_err_L10.pdf}
+  \includegraphics[width=0.49\textwidth]{trotter_err_L12.pdf}\\
+  \includegraphics[width=0.49\textwidth]{trotter_err_L14.pdf}
+  \includegraphics[width=0.49\textwidth]{trotter_err_L16.pdf}\\
+  \caption{Time dependence of the Trotter discretization error $\epsilon_T\lr{t, {\delta t}}/\lr{\delta t}^2$. We divide $\epsilon_T\lr{t, {\delta t}}$ by $\lr{\delta t}^2$ to demonstrate the expected scaling of the Trotter error as $\lr{\delta t}^2$.}
+  \label{fig:trotter_err}
+\end{figure*}
+
+\section{Trotter discretization error}
+\label{sec:trotter_err}
+
+\begin{figure*}[h!pb]
+  \centering
+  \includegraphics[width=0.6\textwidth]{trotter_err_vs_L.pdf}\\
+  \caption{Time dependence of the Trotter discretization error $\epsilon_T\lr{t, {\delta t}}$ for different lattice sizes.}
+  \label{fig:trotter_err_vs_L}
+\end{figure*}
+
+We define the Trotter-discretized evolution operator as
+\begin{eqnarray}
+\label{trotter_evolution}
+ U_T\lr{t, {\delta t}} = \lr{U_T\lr{\delta t}}^{\floor{\frac{t}{\delta t}}} ,
+\end{eqnarray}
+where $\floor{\ldots}$ is the floor function and $U_T\lr{\delta T}$ is the Trotter approximation to the evolution operator with the Trotter discretization time $\delta t$:
+\begin{eqnarray}
+\label{trotter_step}
+ U_T\lr{\delta t} = e^{i \hat{H}_I \frac{\delta t}{2} } e^{i \hat{H}_0 {\delta t}} e^{i \hat{H}_I \frac{\delta t}{2} } .
+\end{eqnarray}
+This ``leapfrog'' form of the Trotter approximation ensures that the Trotter discretization error scales as ${\delta t}^2$.
+
+In order to estimate the Trotter discretization error, we perform the time evolution of a random state vector $\ket{\psi\lr{0}}$ in the Hilbert subspace of the spin-0 states (\ref{spin0_constraint}) using the Trotter evolution operator (\ref{trotter_step}):
+\begin{eqnarray}
+\label{trotter_state_evolution}
+ \ket{\psi\lr{t, {\delta t}}} = U_T\lr{t, {\delta t}} \ket{\psi\lr{0}} .
+\end{eqnarray}
+We define the Trotter discretization error $\epsilon_T\lr{t, {\delta t}}$ as the norm of the difference between the state vectors $\ket{\psi\lr{t, {\delta t}}}$ and $\ket{\psi\lr{t, {\delta t}/2}}$ evolved with Trotter time steps ${\delta t}$ and ${\delta t}/2$:
+\begin{eqnarray}
+\label{trotter_err_def}
+ \epsilon_T\lr{t, {\delta t}} = \vev{|| \ket{\psi\lr{t, {\delta t}}} - \ket{\psi\lr{t, {\delta t}/2}} || } ,
+\end{eqnarray}
+where $\vev{\ldots}$ denotes averaging over random initial state vectors $\ket{\psi\lr{0}}$ and random samples of the random magnetic field $h_x$ in the Hamiltonian (\ref{XXZ_Hamiltonian}) and the norm is defined as $|| \ket{\phi} || = \sqrt{\braket{\phi}{\phi}}$.
+
+Since in our numerical simulation the Trotter evolution is also subject to numerical roundoff errors, we also control the deviation of $U_T\lr{t, {\delta t}}$ from unitarity in terms of the deviation of the norms of $\ket{\psi\lr{t, {\delta t}}}$ and $\ket{\psi\lr{t, {\delta t}/2}}$ from unity:
+\begin{eqnarray}
+\label{norm_err_def}
+ \epsilon_U =
+ \nonumber \\ =
+  \vev{ \max\lr{
+  \left| \, ||\ket{\psi\lr{t, {\delta t}}}|| - 1 \right|, 
+  \left| \, ||\ket{\psi\lr{t, {\delta t}/2}}|| - 1 \right|
+ } } .
+\end{eqnarray}
+Figures~\ref{fig:norm_err_logscale} and \ref{fig:trotter_err_superlong} (plot on the right) show that unitarity error $\epsilon_U$ appears to be reasonably small up to the longest evolution time $t = 10^4$ which we've considered.
+
+\section{Numerical results}
+\label{sec:numres}
+
+On Fig.~\ref{fig:trotter_err} we show the time dependence of the Trotter discretization error $\epsilon_T\lr{t, {\delta t}}/\lr{\delta t}^2$ for different sizes of the spin chain: $L = 10, 12, 14, 16$, and at two different values $h = 1$ and $h = 6$ of the random magnetic field. Dividing by $\lr{\delta t}^2$ and comparing the data for two different time steps, we see that the Trotter error exhibits the expected quadratic scaling in the discretization step $\delta t$ at all times. As Fig.~\ref{fig:trotter_err_vs_L} shows, there appear to be no qualitative differences in the behavior of $\epsilon_T\lr{t, \delta t}$ for different lattice sizes.
+
+At early times $t \lesssim 1$, the time dependence of $\epsilon_T\lr{t, \delta t}$ appears to be quite different in the ordered phase at $h = 1$ and in the chaotic MBL phase at $h = 6$. Notably, in the chaotic phase the system exhibits some oscillations of the Trotter error resembling quasinormal ringing. However, as one can see from Fig.~\ref{fig:trotter_err_superlong}, $\epsilon_T\lr{t, \delta t}$ \textbf{grows linearly} with $t$ at later times $ 1 \lesssim t \lesssim 2 \cdot 10^3$ (for ${\delta t} = 5 \cdot 10^{-2}$) both for $h=1$ and $h=6$. At even later times, the Trotter error $\epsilon_T\lr{t, \delta t}$ defined in (\ref{trotter_err_def}) approaches the limiting value $\epsilon_T\lr{t, \delta t} = \sqrt{2}$. When the Trotter error reaches this limit, discretized evolution operators $U_T\lr{t, {\delta t}}$ and $U_T\lr{t, {\delta t}/2}$ become completely uncorrelated, and the difference $\ket{\psi\lr{t, {\delta t}}} - \ket{\psi\lr{t, {\delta t}/2}}$ behaves as the difference of two independent random state vectors uniformly distributed over unit spheres.
+
+We have also checked that one obtains very similar results for other possible definitions of the Trotter error: 
+\begin{itemize}
+ \item $\epsilon_T$ in terms of the difference of two state vectors as in (\ref{trotter_err_def}), but with either the ground-state vector of $\hat{H}_0$, or another eigenstate in the bulk of the spectrum instead of the random state vector $\ket{\psi}$. Interestingly, deviations from the random-state appear to be strongest for the ground state of $\hat{H}_0$
+ \item $\epsilon_T = || \hat{U}_T\lr{t, {\delta} t} - \hat{U}_T\lr{t, {\delta} t/2} ||$, where $||\ldots||$ is the Frobenius norm.
+\end{itemize}
+
+\begin{figure*}[h!pb]
+  \centering
+  \includegraphics[width=0.49\textwidth]{trotter_err_L12_superlong.pdf}
+  \includegraphics[width=0.49\textwidth]{norm_err_L12_superlong.pdf}\\
+  \caption{Trotter discretization error $\epsilon_T\lr{t, {\delta t}}$ (on the left) and unitarity error $\epsilon_U\lr{t, {\delta} t}$ for $L=12$ on a large time scale (up to $t = 10^4$).}
+  \label{fig:trotter_err_superlong}
+\end{figure*}
+
+\begin{figure*}[h!pb]
+  \centering
+  \includegraphics[width=0.49\textwidth]{trotter_err_L10_log.pdf}
+  \includegraphics[width=0.49\textwidth]{trotter_err_L12_log.pdf}\\
+  \includegraphics[width=0.49\textwidth]{trotter_err_L14_log.pdf}
+  \includegraphics[width=0.49\textwidth]{trotter_err_L16_log.pdf}\\
+  \caption{Time dependence of the Trotter discretization error $\epsilon_T\lr{t, {\delta t}}$ in logarithmic scale.}
+  \label{fig:trotter_err_logscale}
+\end{figure*}
+
+\begin{figure*}[h!pb]
+  \centering
+  \includegraphics[width=0.49\textwidth]{norm_err_L10_log.pdf}
+  \includegraphics[width=0.49\textwidth]{norm_err_L12_log.pdf}\\
+  \includegraphics[width=0.49\textwidth]{norm_err_L14_log.pdf}
+  \includegraphics[width=0.49\textwidth]{norm_err_L16_log.pdf}\\
+  \caption{Time dependence of the unitarity error $\epsilon_U\lr{t, {\delta t}}$ in logarithmic scale.}
+  \label{fig:norm_err_logscale}
+\end{figure*}
+
+\bibliographystyle{apsrev4-1}
+\bibliography{Buividovich}
+
+\end{document} 

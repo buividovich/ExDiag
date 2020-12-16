@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=-1
 CompilerSettings=
-UnitCount=4
+UnitCount=8
 
 [VersionInfo]
 Major=1
@@ -61,7 +61,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
-FileName=square_lattice.hpp
+FileName=trotter.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -71,7 +71,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit6]
-FileName=ising_obs.cpp
+FileName=linalg.hpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -81,7 +81,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit7]
-FileName=ising_obs.hpp
+FileName=linalg.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -101,7 +101,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit3]
-FileName=main.cpp
+FileName=transition.cpp
 CompileCpp=0
 Folder=
 Compile=1
@@ -121,7 +121,17 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit4]
-FileName=..\clue\include\clue_logs.hpp
+FileName=..\clue\include\ansi_io.hpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit8]
+FileName=timing.hpp
 CompileCpp=1
 Folder=
 Compile=1
