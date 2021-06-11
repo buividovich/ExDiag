@@ -178,14 +178,32 @@ void SpinChain::HS0(T* in, T* out, bool magnetic_field_on) //Hamiltonian in spin
 	};
 }
 
-void SpinChain::sz(double* in, double* out, uint i)       //local SigmaZ operator
+void SpinChain::s3(double* in, double* out, uint x)       //local SigmaZ operator
 {
-	uint bm = 1 << i;
-	for(uint ips=0; ips<N; ips++)
-		out[ips] =  (bm&ips? -in[ips] : in[ips]);
+	uint bm = 1 << x;
+	for(uint is=0; is<NS0; is++)
+	{
+		uint ips = S0_basis[is];
+		out[is] =  (bm&ips? -in[is] : in[is]);
+	};
 }
 
-void SpinChain::sz(double* in, double* out)		 //global SigmaZ operator
+t_complex* SpinChain::s3(uint x)       //local sigma operator as a complex-valued matrix
+{
+	t_complex* r = new t_complex[NS02];
+	for(uint i=0; i<NS02; i++) r[i] = 0.0 + 0.0i;
+	
+	uint bm = 1 << x;
+	for(uint is=0; is<NS0; is++)
+	{
+		uint ips = S0_basis[is];
+		r[is*NS0 + is] = (bm&ips? -1.0 + 0.0i : 1.0 + 0.0i);
+	};
+	
+	return r;
+}
+
+void SpinChain::s3(double* in, double* out)		 //global SigmaZ operator
 {
 	for(uint ips=0; ips<N; ips++)
 	{
@@ -482,7 +500,7 @@ void	SpinChain::trotter_evolve(t_complex* in, t_complex* out, double* E0, double
 	};
 }
 
-t_complex*  SpinChain::trotter_evolution_operator(double* E0, double* psi0, t_complex dt)
+t_complex*  SpinChain::trotter_evolution_operator(double* E0, double* psi0, double dt)
 {
 	t_complex* U = new t_complex[NS02];
 	for(uint is=0; is<NS0; is++)
@@ -497,6 +515,42 @@ t_complex*  SpinChain::trotter_evolution_operator(double* E0, double* psi0, t_co
 			};
 		};
 	return U;
+}
+
+t_complex*   SpinChain::trotter_density_matrix(double* E0, double* psi0, double beta, double dtau)
+{
+	double* rdbl = new double[NS02];
+
+	double minE = 1.0E+10; double minHI = 1.0E+10;
+	for(uint ie=0; ie<NS0; ie++) if(E0[ie]<minE ) minE  = E0[ie];
+	for(uint is=0; is<NS0; is++) if(HI[is]<minHI) minHI = HI[is];
+	
+	for(uint is=0; is<NS0; is++)
+		for(uint js=0; js<NS0; js++)
+		{
+			rdbl[is*NS0 + js] = 0.0;
+			for(uint ie=0; ie<NS0; ie++)
+			{
+				double fl =             exp(-0.5*dtau*(HI[is] - minHI))*psi0[ie*NS0 + is];
+				double fr =             exp(-0.5*dtau*(HI[js] - minHI))*psi0[ie*NS0 + js];
+				rdbl[is*NS0 + js] += fl*exp(    -dtau*(E0[ie] -  minE))*fr;
+			};
+		};
+		
+	double* tmp = new double[NS02];
+	double* rho = identity_matrix<double>(NS0);
+	uint NT = round(beta/dtau);
+	for(uint it=0; it<NT; it++)
+	{
+		A_eq_B_mult_C(tmp, rho, rdbl, NS0);
+		std::copy(tmp, tmp + NS02, rho);
+	};
+	delete [] tmp; delete [] rdbl;
+	double Z = tr(rho, NS0);
+	rescale(rho, 1.0/Z, NS02);
+	t_complex* r = double2complex(rho, NS02);
+	delete [] rho;
+	return r;
 }
 
 void SpinChain::exact_evolve(t_complex* in, t_complex* out, double t)

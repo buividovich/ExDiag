@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=-1
 CompilerSettings=
-UnitCount=8
+UnitCount=9
 
 [VersionInfo]
 Major=1
@@ -111,7 +111,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=observable.hpp
+FileName=otoc.cpp
 CompileCpp=1
 Folder=
 Compile=1

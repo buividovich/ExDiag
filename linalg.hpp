@@ -42,8 +42,6 @@ double      orthonormality_norm(T* basis, uint nv, uint n);
 
 double      unitarity_err(t_complex* U, uint n);
 
-t_complex*  identity_matrix(uint n);
-
 void  sort_eigensystem(           double* evals, double* evecs, uint n);
 void check_eigensystem(double* A, double* evals, double* evecs, uint n, double* evec_err=NULL, double* ortho_err=NULL);
 
@@ -102,5 +100,45 @@ T* A_eq_B_mult_C(T* B, T* C, uint n) //Matrix multiplication, returns A
 	A_eq_B_mult_C(r, B, C, n);
 	return r;
 };
+
+template <typename T>
+T tr(T* A, uint n)
+{
+	T r = 0.0;
+	for(uint i=0; i<n; i++)
+		r += A[i*n + i];
+	return r;
+}
+
+template <typename T>
+void identity_matrix(T* A, uint n)
+{
+	for(uint i=0; i<n; i++)
+		for(uint j=0; j<n; j++)
+			A[i*n + j] = (i==j? 1.0 : 0.0);
+}
+
+template <typename T>
+T*  identity_matrix(uint n)
+{
+	T* r = new T[n*n];
+	identity_matrix(r, n);
+	return r;
+}
+
+void hermitian_conjugate(t_complex* out, t_complex* in, uint n);
+t_complex* hermitian_conjugate(t_complex* A, uint n);
+
+template <typename T>
+void  commutator(T* C, T* A, T* B, uint n) //C = [A, B] = A*B - B*A
+{
+	for(uint i=0; i<n; i++)
+		for(uint j=0; j<n; j++)
+		{
+			C[i*n + j] = 0.0;
+			for(uint k=0; k<n; k++)
+				C[i*n + j] += (A[i*n + k]*B[k*n + j] - B[i*n + k]*A[k*n + j]);
+		};
+}
 
 #endif

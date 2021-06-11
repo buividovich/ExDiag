@@ -1,4 +1,4 @@
-\documentclass[10pt,amsmath,amssymb,twocolumn,superscriptaddress,groupedaddress,nofootinbib,aps,prd,twocolumn]{revtex4-1}
+\documentclass[10pt,amsmath,amssymb,twocolumn,superscriptaddress,groupedaddress,nofootinbib,aps,prd,twocolumn]{revtex4-2}
 
 \usepackage{graphicx}  % needed for figures
 \graphicspath{{./plots/}}
@@ -19,6 +19,8 @@
 \newcommand{\braket}[2]{ \langle #1 | #2 \rangle }
 \newcommand{\mycomment}[1]{}
 \renewcommand{\b}[1]{\mathbf{#1}}
+
+\DeclareMathOperator{\tr}{tr}
 
 \newcommand{\floor}[1]{\lfloor #1 \rfloor}
 
@@ -98,7 +100,7 @@ Since in our numerical simulation the Trotter evolution is also subject to numer
  \epsilon_U =
  \nonumber \\ =
   \vev{ \max\lr{
-  \left| \, ||\ket{\psi\lr{t, {\delta t}}}|| - 1 \right|, 
+  \left| \, ||\ket{\psi\lr{t, {\delta t}}}|| - 1 \right|,
   \left| \, ||\ket{\psi\lr{t, {\delta t}/2}}|| - 1 \right|
  } } .
 \end{eqnarray}
@@ -111,7 +113,7 @@ On Fig.~\ref{fig:trotter_err} we show the time dependence of the Trotter discret
 
 At early times $t \lesssim 1$, the time dependence of $\epsilon_T\lr{t, \delta t}$ appears to be quite different in the ordered phase at $h = 1$ and in the chaotic MBL phase at $h = 6$. Notably, in the chaotic phase the system exhibits some oscillations of the Trotter error resembling quasinormal ringing. However, as one can see from Fig.~\ref{fig:trotter_err_superlong}, $\epsilon_T\lr{t, \delta t}$ \textbf{grows linearly} with $t$ at later times $ 1 \lesssim t \lesssim 2 \cdot 10^3$ (for ${\delta t} = 5 \cdot 10^{-2}$) both for $h=1$ and $h=6$. At even later times, the Trotter error $\epsilon_T\lr{t, \delta t}$ defined in (\ref{trotter_err_def}) approaches the limiting value $\epsilon_T\lr{t, \delta t} = \sqrt{2}$. When the Trotter error reaches this limit, discretized evolution operators $U_T\lr{t, {\delta t}}$ and $U_T\lr{t, {\delta t}/2}$ become completely uncorrelated, and the difference $\ket{\psi\lr{t, {\delta t}}} - \ket{\psi\lr{t, {\delta t}/2}}$ behaves as the difference of two independent random state vectors uniformly distributed over unit spheres.
 
-We have also checked that one obtains very similar results for other possible definitions of the Trotter error: 
+We have also checked that one obtains very similar results for other possible definitions of the Trotter error:
 \begin{itemize}
  \item $\epsilon_T$ in terms of the difference of two state vectors as in (\ref{trotter_err_def}), but with either the ground-state vector of $\hat{H}_0$, or another eigenstate in the bulk of the spectrum instead of the random state vector $\ket{\psi}$. Interestingly, deviations from the random-state appear to be strongest for the ground state of $\hat{H}_0$
  \item $\epsilon_T = || \hat{U}_T\lr{t, {\delta} t} - \hat{U}_T\lr{t, {\delta} t/2} ||$, where $||\ldots||$ is the Frobenius norm.
@@ -145,7 +147,24 @@ We have also checked that one obtains very similar results for other possible de
   \label{fig:norm_err_logscale}
 \end{figure*}
 
-\bibliographystyle{apsrev4-1}
+\section{Out-of-time-order correlators}
+\label{sec:otocs}
+
+To check whether we can distinguish the chaotic and the non-chaotic phases on our small lattices, we have also calculated the out-of-time-order correlator of local operators $\sigma^3_0$:
+\begin{eqnarray}
+\label{otoc_def}
+ -\tr\lr{e^{-\beta \hat{H}} \lrs{\hat{\sigma}^3_0\lr{0}, \hat{\sigma}^3_0\lr{t}}^2 } .
+\end{eqnarray}
+The result is shown on Fig.~\ref{fig:otocs}. We see that at small $h$, in the ``diffusive'' regime, OTOCs exhibit much faster growth than in the large-$h$ MBL regime.
+
+\begin{figure*}[h!pb]
+  \centering
+  \includegraphics[width=0.49\textwidth]{otoc_L12_dt1.00E-02}\\
+  \caption{Time dependence of the out-of-time-order correlator for $L=12$ lattice in spin-0 sector at different values of $h$ and different temperatures.}
+  \label{fig:otocs}
+\end{figure*}
+
+\bibliographystyle{apsrev4-2}
 \bibliography{Buividovich}
 
 \end{document} 

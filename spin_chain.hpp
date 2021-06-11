@@ -39,14 +39,18 @@ class SpinChain
 		//void        HS0(t_complex* in, t_complex* out);				//Hamiltonian in spin0 sector
 		template<typename T> 
 		void        HS0(T* in, T* out, bool magnetic_field_on=true);
-		void        sz(double* in, double* out);       			//global SigmaZ operator
-		void        sz(double* in, double* out, uint i);       	//local  SigmaZ operator
+		void        s3(double* in, double* out);       			//global SigmaZ operator
+		void        s3(double* in, double* out, uint i);       	//local  SigmaZ operator
+		t_complex*  s3(uint x);									//local  SigmaZ operator as complex matrix
 		void        diagonalize_HS0_h0(double* E0, double* psi0, bool check=true, bool noisy=false);
 		void        diagonalize_HS0(bool check=true, bool noisy=false);
 		t_complex*  evolution_operator(t_complex dt);
 		void        init_magnetic_hamiltonian();  //returns HI is the term in the Hamiltonian with external magnetic field. The data is an array of NS0 diagonal matrix elements in the basis of S=0 states
+		
 		void        trotter_evolve(t_complex* in, t_complex* out, double* E0, double* psi0, t_complex dt);
-		t_complex*  trotter_evolution_operator(double* E0, double* psi0, t_complex dt);
+		t_complex*  trotter_evolution_operator(double* E0, double* psi0, double dt);
+		t_complex*  trotter_density_matrix(    double* E0, double* psi0, double beta, double dtau);
+		
 		void        exact_evolve(t_complex* in, t_complex* out, double t);
 		double      storage_size = 0.0;								//size in Gb required to store U
 		double*     E    = NULL;									//Eigenenergies

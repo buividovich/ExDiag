@@ -188,3 +188,20 @@ double      unitarity_err(t_complex* U, uint n)
 		};
 	return max_err;
 }
+
+void hermitian_conjugate(t_complex* out, t_complex* in, uint n)
+{
+	for(uint i=0; i<n; i++)
+		for(uint j=0; j<n; j++)
+		{
+			out[i*n + j] = conj(in[j*n + i]);
+		};
+}
+
+t_complex* hermitian_conjugate(t_complex* A, uint n)
+{
+	t_complex* r = new t_complex[n*n];
+	hermitian_conjugate(r, A, n);
+	return r;
+}
+

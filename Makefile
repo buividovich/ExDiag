@@ -26,14 +26,17 @@ trans: transition.cpp $(SRC) $(HDR)
 trotter: trotter.cpp $(SRC) $(HDR)
 	$(CC) $(SRC) ./$< $(LIB) -o ./$@
 	
+otoc: otoc.cpp $(SRC) $(HDR)
+	$(CC) $(SRC) ./$< $(LIB) -o ./$@
+	
 clean:
-	rm -f -v ./trans ./trotter
+	rm -f -v ./trans ./trotter ./otoc
 	
 RHOST = pbuividovich@134.176.18.144:~/ExDiag/
 #RHOST = pbuivid@barkla5.liv.ac.uk:~/ExDiag/
 
 FLIST =  ./Makefile $(SRC) $(HDR)
-FLIST += ./transition.cpp ./trotter.cpp
+FLIST += ./transition.cpp ./trotter.cpp ./otoc.cpp
 FLIST += ./scripts/*.sh 
 	
 upload:

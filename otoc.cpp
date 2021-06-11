@@ -13,6 +13,17 @@ int main(int argc, char **argv)
 {
 	cout << endl;
 	
+	cout << sizeof(float) << endl;
+	cout << sizeof(double) << endl;
+	cout << sizeof(long double) << endl;
+	
+	double x = 22.0/7.0;
+	double y = sqrt(x);
+	double r = 7.0*y*y/22.0 - 1.0;
+    printf("%2.4E", r); 
+	
+	return EXIT_SUCCESS;
+	
 	uint nthreads = 0; //If 0, the number of threads will be set automatically
 	double a_time = 0.0; //Timing variable
 	//XXZ model parameters
@@ -47,7 +58,6 @@ int main(int argc, char **argv)
 	//if(vm.count("min-h")) quantum = true; 
 	
 	uint   nt   = (int)ceil( tmax/dt);  //Number of steps
-	uint   lt   = (int)round(tmax/dt);
 	
 	if(nthreads==0)
 	{
@@ -101,8 +111,7 @@ int main(int argc, char **argv)
 	
 	std::cout << "Calculating Trotter evolution for " << nh << " replicas using " << nthreads << " threads, nt = " << nt << "..." << endl;
 	
-	double* trotter_errs = new double[nh*nt];
-	double* norm_errs    = new double[nh*nt];
+	double* otocs = new double[nh*nt];
 	
 	TIMING_START;
 	#pragma omp parallel for
@@ -111,36 +120,41 @@ int main(int argc, char **argv)
 		int ithread = omp_get_thread_num();
 		int rng_seed = (int)omp_get_wtime() + ithread;
 		SpinChain* SC = new SpinChain(L, h, false, false, false, rng_seed);
-		
 		SC->init_magnetic_hamiltonian();	 //This is a diagonal matrix in our spin eigenbasis, thus we only store diagonal elements
 		
-		double t = 0.0; t_complex* tmp  = new t_complex[NS02];
+		//First, we initialize the density matrix
 		
-		//First calculating the Euclidean-time evolution up to \beta
-		t_complex* rho = identity_matrix(NS0);
-		t_complex* Uidt  = SC->trotter_evolution_operator(E0, psi0, 1.0i*dt);
-		for(uint it=0; it<lt; it++)
-		{
-			A_eq_B_mult_C(tmp, rho, Uidt, NS0);
-			std::copy(tmp, tmp + NS02, rho);
-		};
-		delete [] Uidt;
+		t_complex* rho  = SC->trotter_density_matrix(    E0, psi0, beta, dt);
+		t_complex* Udt  = SC->trotter_evolution_operator(E0, psi0,       dt);
+		t_complex* Udtc = hermitian_conjugate(Udt, NS0);
 		
+		//Now the OTOC operators A and B
+		t_complex* A = SC->s3(0); t_complex* B = SC->s3(0);
+		
+		double t = 0.0;
+		t_complex* tmp  = new t_complex[NS02]; t_complex* tmp1 = new t_complex[NS02];
 		//Now the real-time evolution
-		t_complex* Ut   = identity_matrix(NS0);
-		t_complex* Udt  = SC->trotter_evolution_operator(E0, psi0, 1.0*dt);
 		for(uint it=0; it<nt; it++)
 		{
-			//Trotter evolution with step dt for in1
-			A_eq_B_mult_C(tmp, Ut, Udt, NS0);
-			std::copy(tmp, tmp + NS02, U1);
+			//Real-time evolution of B
+			A_eq_B_mult_C(tmp,    B,  Udt, NS0);
+			A_eq_B_mult_C(  B, Udtc,  tmp, NS0);
+
+			//Forming the OTOC
+			commutator(tmp, A, B, NS0);
+			A_eq_B_mult_C(tmp1, tmp, tmp, NS0);
+			A_eq_B_mult_C(tmp, rho, tmp1, NS0);
+			otocs[ih*nt + it] = -1.0*real(tr(tmp, NS0));
+			//
 			t += dt;			   
 			if(ithread==0){cout << "."; fflush(stdout);};
 		};
-		delete [] Udt;
 		
-		delete [] rho; delete [] Ut;
+		delete [] rho;
 		delete [] tmp;
+		delete [] Udt;
+		delete [] Udtc;
+		delete [] tmp1;
 		
 		delete SC;
 	};//End of loop over magnetic field replicas
@@ -148,36 +162,36 @@ int main(int argc, char **argv)
 	TIMING_FINISH;
 	std::cout << ansi::green << "... Time per Trotter step:\t" << ansi::magenta << (a_time/(double)nt) << ansi::green << " sec.\n" << ansi::reset << endl << endl;
 	
-	//Statistical averaging and output
-	/*char fname[512];
-	sprintf(fname, "%s/trotter/otocs_L%i_dt%2.2E_h%2.4lf_frobenius.dat", datadir.c_str(), L, dt, h);
+	char fname[512];
+	sprintf(fname, "%s/OTOC/s3s3_L%i_beta%2.2E_dt%2.2E_h%2.4lf.dat", datadir.c_str(), L, beta, dt, h);
 	FILE* f = fopen(fname, "w");
 	if(f==NULL) fprintf(stderr, "Cannot open the file %s for writing!\n", fname);
 	
 	for(uint it=0; it<nt; it++)
 	{
-		double t = dt*(double)it;
-		double a_trotter_err = 0.0;	double d_trotter_err = 0.0;
-		double a_norm_err = 0.0;	double d_norm_err = 0.0;
+		double aotoc = 0.0, dotoc = 0.0;
 		for(uint ih=0; ih<nh; ih++)
 		{
-			a_trotter_err += trotter_errs[nt*ih + it];
-			d_trotter_err += trotter_errs[nt*ih + it]*trotter_errs[nt*ih + it];
-			a_norm_err    +=    norm_errs[nt*ih + it];
-			d_norm_err    +=    norm_errs[nt*ih + it]*norm_errs[nt*ih + it];
+			aotoc += otocs[ih*nt + it];
+			dotoc += otocs[ih*nt + it]*otocs[ih*nt + it];
 		};
-		a_trotter_err /= (double)nh; d_trotter_err /= (double)nh;
-		   a_norm_err /= (double)nh;    d_norm_err /= (double)nh;
-		d_trotter_err = (nh>1? sqrt(abs(d_trotter_err - a_trotter_err*a_trotter_err)/(double)(nh-1)) : 0.0);
-	   	d_norm_err =    (nh>1? sqrt(abs(d_norm_err -    a_norm_err*a_norm_err   )/(double)(nh-1))    : 0.0);
+		aotoc = aotoc/(double)nh; 
+		if(nh>1) dotoc = sqrt((dotoc/(double)nh - aotoc*aotoc)/(double)(nh-1));
 		
-		if(f!=NULL) fprintf(f, "%4.4lf\t%2.4E\t%2.4E\t%2.4E\t%2.4E\n", t, a_trotter_err, d_trotter_err, a_norm_err, d_norm_err);   
+		cout << ansi::cyan << ((it+1)*dt) << "\t" << ansi::green;
+		printf("%2.4E\t%2.4E", aotoc, dotoc);
+		cout << ansi::reset << endl;
+		
+		if(f!=NULL) fprintf(f, "%4.4lf\t%2.4E\t%2.4E\n", ((it+1)*dt), aotoc, dotoc);   
 	};
+	
 	if(f!=NULL)
 	{
 		fclose(f);
 		fprintf(stdout, "Data saved to the file %s", fname);
-	};*/
+	};
+	
+	delete [] otocs;
 	
 	cout << endl;
 	return EXIT_SUCCESS;
